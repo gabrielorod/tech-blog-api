@@ -8,7 +8,6 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { Article, Prisma, PrismaClient, Tag } from 'generated/prisma';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { TagNames } from './enum/tag-names.enum';
 
 @Injectable()
 export class ArticlesService {
@@ -111,7 +110,7 @@ export class ArticlesService {
     };
 
     if (dto.tags && Array.isArray(dto.tags)) {
-      const tagsArray = dto.tags as TagNames[];
+      const tagsArray: string[] = dto.tags;
 
       updateData.tags = {
         set: [],
