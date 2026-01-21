@@ -11,6 +11,7 @@ datasource db {
 model User {
   id        Int       @id @default(autoincrement())
   name      String
+  image     String?
   email     String    @unique
   password  String
   createdAt DateTime  @default(now())
@@ -50,4 +51,8 @@ model Comment {
 
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+
+  parentId  Int?
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentToComment")
 }
