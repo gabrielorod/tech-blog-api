@@ -28,7 +28,7 @@ npm install
 Crie um arquivo `.env` na raiz do projeto:
 
 ```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tech-blog-db"
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/tech-blog-db?schema=public"
 ```
 
 ### 4. Iniciar o PostgreSQL com Docker
@@ -44,7 +44,8 @@ Isso vai iniciar:
 ### 5. Executar as migrações do Prisma
 
 ```bash
-docker run --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma migrate deploy"
+npx prisma migrate dev --name init
+npx prisma db seed
 ```
 
 ### 6. Rodar a aplicação
