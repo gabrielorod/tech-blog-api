@@ -15,7 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload) {
-    // Agora o TS sabe que payload.name e payload.sub existem e são seguros
     return {
       id: payload.sub,
       email: payload.email,
