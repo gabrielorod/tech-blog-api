@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
 import * as bcrypt from 'bcrypt';
-import { Tag } from 'generated/prisma';
+import { PrismaClient, Tag } from '@prisma/client';
 
 dotenv.config();
 

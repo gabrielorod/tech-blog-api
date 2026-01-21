@@ -3,8 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { HashingService } from './hashing/hashing.service';
-import { User } from '@prisma/client';
-import { PrismaClient } from 'generated/prisma/edge';
+import { PrismaClient, User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {

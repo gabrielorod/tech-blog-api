@@ -1,4 +1,4 @@
-import { Tag } from 'generated/prisma';
+import { Tag } from '@prisma/client';
 
 export class ArticleAuthorDto {
   id?: number;

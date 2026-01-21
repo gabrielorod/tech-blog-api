@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { Article, Prisma, PrismaClient, Tag } from 'generated/prisma';
+import { Article, Prisma, PrismaClient, Tag } from '@prisma/client';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
