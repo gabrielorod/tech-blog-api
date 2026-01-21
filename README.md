@@ -1,53 +1,217 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Tech Blog API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Uma API REST moderna para um blog de tecnologia, construída com NestJS, Prisma e PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Requisitos
 
-## Description
+- **Node.js** v18+ (npm incluído)
+- **Docker** e **Docker Compose**
+- **Git**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Quick Start
 
-## Project setup
+### 1. Clonar o repositório
 
 ```bash
-$ npm install
+git clone <repository-url>
+cd tech-blog-api
 ```
 
-## Compile and run the project
+### 2. Instalar dependências
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 
 ```bash
-# unit tests
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tech-blog-db"
+```
+
+### 4. Iniciar o PostgreSQL com Docker
+
+```bash
+docker-compose up -d
+```
+
+Isso vai iniciar:
+- **PostgreSQL** na porta `5432`
+- **PgAdmin** na porta `5050`
+
+### 5. Executar as migrações do Prisma
+
+```bash
+docker run --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma migrate deploy"
+```
+
+### 6. Rodar a aplicação
+
+```bash
+# Modo desenvolvimento
+npm run start:dev
+
+# Modo produção
+npm run start:prod
+```
+
+A API estará disponível em `http://localhost:3000`
+
+## 📊 Visualizar o Banco de Dados
+
+### Opção 1: PgAdmin (Recomendado)
+
+Acesse: **http://localhost:5050**
+
+**Login:**
+- Email: `admin@example.com`
+- Password: `admin`
+
+**Cadastrar servidor:**
+1. Clique em "Servers" → "Register" → "Server"
+2. Preencha com:
+   - Hostname: `postgres`
+   - Port: `5432`
+   - Username: `postgres`
+   - Password: `postgres`
+
+### Opção 2: Prisma Studio
+
+```bash
+docker run -p 5555:5555 --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma studio --port 5555"
+```
+
+Acesse: **http://localhost:5555**
+
+### Opção 3: Terminal (CLI)
+
+```bash
+docker exec tech-blog-db psql -U postgres -d tech-blog-db -c '\dt'
+```
+
+## 🗂️ Estrutura do Projeto
+
+```
+tech-blog-api/
+├── src/
+│   ├── app.controller.ts      # Controlador principal
+│   ├── app.service.ts         # Serviço principal
+│   ├── app.module.ts          # Módulo principal
+│   └── main.ts                # Entrada da aplicação
+├── prisma/
+│   ├── schema.prisma          # Schema do banco de dados
+│   └── migrations/            # Histórico de migrações
+├── prisma.config.ts           # Configuração do Prisma
+├── docker-compose.yml         # Configuração do Docker
+├── .env                       # Variáveis de ambiente
+└── package.json               # Dependências do projeto
+```
+
+## 📦 Dependências Principais
+
+- **NestJS** - Framework Node.js
+- **Prisma** - ORM para banco de dados
+- **PostgreSQL** - Banco de dados relacional
+- **TypeScript** - Linguagem tipada
+
+## 🧪 Testes
+
+```bash
+# Testes unitários
+npm run test
+
+# Testes e2e
+npm run test:e2e
+
+# Cobertura de testes
+npm run test:cov
+```
+
+## 📝 Scripts Disponíveis
+
+```bash
+npm run start         # Rodar em produção
+npm run start:dev     # Rodar em desenvolvimento com watch
+npm run start:debug   # Rodar com debug
+npm run build         # Build da aplicação
+npm run lint          # Verificar linting
+npm run format        # Formatar código
+```
+
+## 🔄 Prisma Migrations
+
+Para criar uma nova migração após alterar o schema:
+
+```bash
+docker run --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma migrate dev --name <nome-da-migracao>"
+```
+
+Exemplo:
+```bash
+docker run --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma migrate dev --name add_user_role"
+```
+
+## 🗄️ Modelos do Banco de Dados
+
+### User
+- `id` (Int) - Identificador único
+- `name` (String) - Nome do usuário
+- `email` (String) - Email único
+- `createdAt` (DateTime) - Data de criação
+
+### Article
+- `id` (Int) - Identificador único
+- `title` (String) - Título do artigo
+- `content` (String) - Conteúdo
+- `authorId` (Int) - Referência ao usuário
+- `createdAt` (DateTime)
+- `updatedAt` (DateTime)
+
+### Comment
+- `id` (Int) - Identificador único
+- `content` (String) - Texto do comentário
+- `articleId` (Int) - Referência ao artigo
+- `authorId` (Int) - Referência ao usuário
+- `createdAt` (DateTime)
+
+### Tag
+- `id` (Int) - Identificador único
+- `name` (String) - Nome da tag
+
+## 🐳 Comandos Docker Úteis
+
+```bash
+# Iniciar containers
+docker-compose up -d
+
+# Parar containers
+docker-compose down
+
+# Ver logs do PostgreSQL
+docker logs tech-blog-db
+
+# Acessar o terminal do PostgreSQL
+docker exec -it tech-blog-db psql -U postgres -d tech-blog-db
+
+# Remover volumes (apagar dados)
+docker-compose down -v
+```
+
+## 📞 Credenciais Padrão
+
+| Serviço | Host | Port | User | Password |
+|---------|------|------|------|----------|
+| PostgreSQL | localhost | 5432 | postgres | postgres |
+| PgAdmin | localhost | 5050 | admin@example.com | admin |
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+## 📧 Testes
+
 $ npm run test
 
 # e2e tests
@@ -69,19 +233,6 @@ $ mau deploy
 ```
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
 ## Support
 
