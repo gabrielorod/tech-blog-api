@@ -1,7 +1,8 @@
-import { PrismaClient } from '../generated/prisma'; // seu path customizado
+import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as dotenv from 'dotenv';
+import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
@@ -18,22 +19,41 @@ const prisma = new PrismaClient({
 });
 
 async function seed() {
+  const salt = await bcrypt.genSalt(10);
+  const defaultPassword = await bcrypt.hash('mudar123', salt);
+
   // USERS
   await prisma.user.create({
-    data: { id: 1, name: 'Fred Marques', email: 'fred.marques@email.com' },
+    data: {
+      id: 1,
+      name: 'Fred Marques',
+      email: 'fred.marques@email.com',
+      password: defaultPassword,
+    },
   });
   await prisma.user.create({
     data: {
       id: 2,
       name: 'Carlos Henrique',
       email: 'carlos.henrique@email.com',
+      password: defaultPassword,
     },
   });
   await prisma.user.create({
-    data: { id: 3, name: 'Carlos Eduardo', email: 'carlos.eduardo@email.com' },
+    data: {
+      id: 3,
+      name: 'Carlos Eduardo',
+      email: 'carlos.eduardo@email.com',
+      password: defaultPassword,
+    },
   });
   await prisma.user.create({
-    data: { id: 4, name: 'Geovana Rocha', email: 'geovana.rocha@email.com' },
+    data: {
+      id: 4,
+      name: 'Geovana Rocha',
+      email: 'geovana.rocha@email.com',
+      password: defaultPassword,
+    },
   });
 
   // TAGS
