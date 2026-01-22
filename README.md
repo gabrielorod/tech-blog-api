@@ -8,6 +8,24 @@ Uma API REST moderna para um blog de tecnologia, construída com NestJS, Prisma 
 - **Docker** e **Docker Compose**
 - **Git**
 
+---
+
+## 📖 Documentação da API (Swagger)
+
+A API possui documentação interativa completa (OpenAPI 3.0). Para acessar:
+
+1. Inicie a aplicação: `npm run start:dev`
+2. Acesse: **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
+
+### 🔑 Credenciais para Teste (Seed)
+Ao executar o comando de seed, o banco é populado com usuários padrão.
+- **Usuários:** Podem ser consultados via Prisma Studio ou PgAdmin.
+- **Senha padrão para todos:** `mudar123`
+
+> **Dica:** Para testar rotas protegidas (Articles/Comments), realize o login no endpoint `/auth/login`, copie o token, clique no botão **Authorize** no topo do Swagger e cole o token.
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Clonar o repositório
@@ -80,6 +98,12 @@ Acesse: **http://localhost:5050**
    - Password: `postgres`
 
 ### Opção 2: Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+ou
 
 ```bash
 docker run -p 5555:5555 --network tech-blog-api_default -v ${PWD}:/work -w /work node:24-alpine sh -c "npm ci && DATABASE_URL=postgresql://postgres:postgres@tech-blog-db:5432/tech-blog-db npx prisma studio --port 5555"

@@ -1,0 +1,287 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Tech Blog API - Gabriel",
+    "description": "API completa para gerenciamento de artigos técnicos, autenticação e sistema de comentários hierárquicos.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local de Desenvolvimento"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Insira o token JWT retornado no login. Formato: Bearer {token}"
+      }
+    },
+    "schemas": {
+      "TagCodes": {
+        "type": "string",
+        "description": "Identificadores únicos das tags em CAPS LOCK",
+        "enum": [
+          "GRAO_DIRETO", "TECNOLOGIA", "AGRONEGOCIO", "CICD", "DEVOPS", 
+          "AGILIDADE", "NOSQL", "BANCO_DE_DADOS", "ESCALABILIDADE", 
+          "KUBERNETES", "CONTEINERES", "ORQUESTRACAO", "SERVERLESS", 
+          "SEGURANCA", "CLOUD", "COLABORACAO", "TIMES_DISTRIBUIDOS", 
+          "FRONTEND", "FRAMEWORKS", "REACT", "INOVACAO"
+        ]
+      },
+      "Tag": {
+        "type": "object",
+        "description": "Objeto que representa uma tag salva no banco",
+        "properties": {
+          "id": { "type": "number", "description": "ID numérico da tag", "example": 1 },
+          "name": { "type": "string", "description": "Nome de exibição da tag", "example": "DevOps" }
+        }
+      },
+      "Author": {
+        "type": "object",
+        "description": "Dados resumidos do autor",
+        "properties": {
+          "id": { "type": "number", "example": 10 },
+          "name": { "type": "string", "example": "Gabriel Rod" },
+          "image": { "type": "string", "nullable": true, "example": "https://avatar.url" }
+        }
+      },
+      "CommentResponse": {
+        "type": "object",
+        "description": "Representação de um comentário",
+        "properties": {
+          "id": { "type": "number", "example": 1 },
+          "content": { "type": "string", "example": "Ótimo artigo, parabéns!" },
+          "articleId": { "type": "number", "example": 1 },
+          "parentId": { "type": "number", "nullable": true, "example": 2 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "author": { "$ref": "#/components/schemas/Author" },
+          "replies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "number", "example": 5 },
+                "content": { "type": "string", "example": "É isso ai Fred!" },
+                "createdAt": { "type": "string", "format": "date-time" },
+                "articleId": { "type": "number", "example": 5 },
+                "authorId": { "type": "number", "example": 2 },
+                "parentId": { "type": "number", "example": 1 },
+                "author": { "$ref": "#/components/schemas/Author" },
+                "parent": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "number", "example": 1 },
+                    "content": { "type": "string", "example": "Teste 1234 ABC" },
+                    "author": { 
+                      "type": "object", 
+                      "properties": { "name": { "type": "string", "example": "Fred Marques" } }
+                    }
+                  }
+                }
+              }
+            }
+          }  
+        }
+      },
+      "ArticleResponse": {
+        "type": "object",
+        "description": "Estrutura completa de resposta de um artigo",
+        "properties": {
+          "id": { "type": "number", "example": 1 },
+          "title": { "type": "string", "example": "Minha jornada com NestJS" },
+          "content": { "type": "string", "example": "Conteúdo detalhado do artigo com mais de 20 caracteres..." },
+          "imageUrl": { "type": "string", "nullable": true, "example": "https://picsum.photos/200" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "author": { "$ref": "#/components/schemas/Author" },
+          "tags": { 
+            "type": "array", 
+            "items": { "$ref": "#/components/schemas/Tag" } 
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "description": "Verifica se a API está online.",
+        "responses": {
+          "200": {
+            "description": "API online",
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string", "example": "Is alive!" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Realizar Login",
+        "description": "Gera um token JWT para acesso aos endpoints protegidos.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "gabriel@email.com" },
+                  "password": { "type": "string", "example": "senha123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login bem-sucedido",
+            "content": {
+              "application/json": {
+                "example": { "access_token": "eyJhbGciOiJIUzI1..." }
+              }
+            }
+          },
+          "401": { "description": "E-mail ou senha incorretos" }
+        }
+      }
+    },
+    "/articles": {
+      "get": {
+        "tags": ["Articles"],
+        "summary": "Listar artigos",
+        "description": "Retorna uma lista paginada. Aceita filtros de busca e tags.",
+        "parameters": [
+          { "name": "search", "in": "query", "description": "Busca por título", "schema": { "type": "string" } },
+          { "name": "tag", "in": "query", "description": "Código da tag em CAPS LOCK", "schema": { "$ref": "#/components/schemas/TagCodes" } },
+          { "name": "page", "in": "query", "schema": { "type": "number", "default": 1 } },
+          { "name": "pageSize", "in": "query", "schema": { "type": "number", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [{ "id": 1, "title": "Artigo Exemplo", "author": { "name": "Gabriel Rod" }, "tags": [{ "id": 3, "name": "agronegócio" }] }],
+                  "pagination": { "totalItems": 1, "itemCount": 1, "itemsPerPage": 10, "totalPages": 1, "currentPage": 1 }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Articles"],
+        "summary": "Criar artigo",
+        "description": "Endpoint autenticado para publicação de artigos.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "content"],
+                "properties": {
+                  "title": { "type": "string", "example": "Novo Artigo Tech" },
+                  "content": { "type": "string", "example": "Conteúdo que descreve o artigo em detalhes..." },
+                  "imageUrl": { "type": "string", "example": "https://picsum.photos/200" },
+                  "tags": { "type": "array", "items": { "$ref": "#/components/schemas/TagCodes" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Criado" } }
+      }
+    },
+    "/articles/{id}": {
+      "get": {
+        "tags": ["Articles"],
+        "summary": "Buscar artigo por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "number" } }],
+        "responses": {
+          "200": { "description": "Sucesso", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ArticleResponse" } } } },
+          "404": { "description": "Não encontrado" }
+        }
+      },
+      "put": {
+        "tags": ["Articles"],
+        "summary": "Atualizar artigo",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "number" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "title": { "type": "string" }, "content": { "type": "string" }, "imageUrl": { "type": "string" }, "tags": { "type": "array", "items": { "$ref": "#/components/schemas/TagCodes" } } } } } }
+        },
+        "responses": { "200": { "description": "Atualizado" } }
+      },
+      "delete": {
+        "tags": ["Articles"],
+        "summary": "Remover artigo",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "number" } }],
+        "responses": { "204": { "description": "Removido" } }
+      }
+    },
+    "/comments": {
+      "post": {
+        "tags": ["Comments"],
+        "summary": "Criar comentário",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content", "articleId"],
+                "properties": {
+                  "content": { "type": "string", "example": "Excelente conteúdo!" },
+                  "articleId": { "type": "number", "example": 1 },
+                  "parentId": { "type": "number", "nullable": true, "example": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CommentResponse" } } } }
+        }
+      }
+    },
+    "/comments/article/{articleId}": {
+      "get": {
+        "tags": ["Comments"],
+        "summary": "Listar comentários do artigo",
+        "parameters": [{ "name": "articleId", "in": "path", "required": true, "schema": { "type": "number" } }],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CommentResponse" } } } }
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "delete": {
+        "tags": ["Comments"],
+        "summary": "Deletar comentário",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "number" } }],
+        "responses": { "200": { "description": "Removido" } }
+      }
+    }
+  }
+}

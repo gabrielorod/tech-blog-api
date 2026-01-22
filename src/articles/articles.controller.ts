@@ -18,23 +18,19 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { ArticleQueryDto } from './dto/article-query.dto';
 
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
-  async findAll(
-    @Query('search') search?: string,
-    @Query('tag') tag?: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
+  async findAll(@Query() query: ArticleQueryDto) {
     return await this.articlesService.findAll(
-      search,
-      tag,
-      Number(page) || 1,
-      Number(pageSize) || 10,
+      query.search,
+      query.tag,
+      Number(query.page) || 1,
+      Number(query.pageSize) || 10,
     );
   }
 
