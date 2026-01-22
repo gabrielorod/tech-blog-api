@@ -4,10 +4,10 @@ import {
   MinLength,
   MaxLength,
   IsArray,
-  IsEnum,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
-import { TagNames } from '../enum/tag-names.enum';
+import { TagCodes } from '../enum/tag-names.enum';
 
 export class CreateArticleDto {
   @IsString()
@@ -22,7 +22,10 @@ export class CreateArticleDto {
   content: string;
 
   @IsArray()
-  @IsEnum(TagNames, { each: true })
+  @IsEnum(TagCodes, {
+    each: true,
+    message: 'Tag inválida. Use os códigos em CAPS.',
+  })
   @IsOptional()
-  tags?: TagNames[];
+  tags?: TagCodes[];
 }

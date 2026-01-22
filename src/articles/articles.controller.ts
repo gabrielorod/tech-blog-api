@@ -11,11 +11,11 @@ import {
   Put,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Article } from '@prisma/client';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
@@ -24,12 +24,24 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
-  async findAll(): Promise<ArticleResponseDto[]> {
-    return await this.articlesService.findAll();
+  async findAll(
+    @Query('search') search?: string,
+    @Query('tag') tag?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return await this.articlesService.findAll(
+      search,
+      tag,
+      Number(page) || 1,
+      Number(pageSize) || 10,
+    );
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Article> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ArticleResponseDto> {
     return await this.articlesService.findOne(id);
   }
 

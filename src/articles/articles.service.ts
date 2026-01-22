@@ -8,6 +8,8 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { Article, Prisma, PrismaClient, Tag } from '@prisma/client';
 import { ArticleResponseDto } from './dto/article-response.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { PaginatedResponseDto } from 'src/common/dto/paginated-response.dto';
+import { TagLabels } from './enum/tag-names.enum';
 
 @Injectable()
 export class ArticlesService {
@@ -17,54 +19,91 @@ export class ArticlesService {
     return this.prisma as PrismaClient;
   }
 
-  async findAll(): Promise<ArticleResponseDto[]> {
-    const articlesFromDb = await this.prismaClient.article.findMany({
+  async findAll(
+    search?: string,
+    tag?: string,
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<PaginatedResponseDto<ArticleResponseDto>> {
+    const limit = Math.min(pageSize, 50);
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ArticleWhereInput = {
+      AND: [
+        search ? { title: { contains: search, mode: 'insensitive' } } : {},
+        tag ? { tags: { some: { name: tag } } } : {},
+      ],
+    };
+
+    const [articles, total] = await Promise.all([
+      this.prismaClient.article.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { author: true, tags: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaClient.article.count({ where }),
+    ]);
+
+    const mappedArticles = articles.map((item) => ({
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      author: { id: item.authorId, name: item.author.name },
+      tags: item.tags,
+    }));
+
+    return {
+      data: mappedArticles,
+      pagination: {
+        totalItems: total,
+        itemCount: mappedArticles.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
+  }
+
+  async findOne(id: number): Promise<ArticleResponseDto> {
+    const item = await this.prismaClient.article.findUnique({
+      where: { id },
       include: {
         author: { select: { id: true, name: true } },
         tags: true,
       },
     });
 
-    return articlesFromDb.map(
-      (item): ArticleResponseDto => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-        author: {
-          id: item.authorId,
-          name: item.author.name,
-        },
-        tags: item.tags,
-      }),
-    );
-  }
+    if (!item) throw new NotFoundException('Artigo não encontrado');
 
-  async findOne(id: number): Promise<Article> {
-    const article = await this.prismaClient.article.findUnique({
-      where: { id },
-    });
-    if (!article) throw new NotFoundException('Artigo não encontrado');
-    return article;
+    return {
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      author: {
+        id: item.authorId,
+        name: item.author.name,
+      },
+      tags: item.tags,
+    };
   }
 
   async create(
     dto: CreateArticleDto,
     authorId: number,
   ): Promise<ArticleResponseDto> {
-    console.log('Tentando criar artigo para o autor:', authorId);
-    console.log('Dados do DTO:', dto);
-
     const item = await this.prismaClient.article.create({
       data: {
         title: dto.title,
         content: dto.content,
         authorId: authorId,
         tags: {
-          connect: dto.tags?.map((tagName) => ({
-            name: tagName,
-          })),
+          connect: dto.tags?.map((code) => ({ name: TagLabels[code] })),
         },
       },
       include: {
@@ -110,11 +149,11 @@ export class ArticlesService {
     };
 
     if (dto.tags && Array.isArray(dto.tags)) {
-      const tagsArray: string[] = dto.tags;
-
       updateData.tags = {
         set: [],
-        connect: tagsArray.map((tagName) => ({ name: tagName })),
+        connect: dto.tags?.map((code) => ({
+          name: TagLabels[code],
+        })),
       };
     }
 
