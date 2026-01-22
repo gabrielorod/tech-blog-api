@@ -19,7 +19,7 @@ A API possui documentação interativa completa (OpenAPI 3.0). Para acessar:
 
 ### 🔑 Credenciais para Teste (Seed)
 Ao executar o comando de seed, o banco é populado com usuários padrão.
-- **Usuários:** Podem ser consultados via Prisma Studio ou PgAdmin.
+- **Usuários:** carlos.henrique@email.com | carlos.eduardo@email.com | geovana.rocha@email.com | fred.marques@email.com.
 - **Senha padrão para todos:** `mudar123`
 
 > **Dica:** Para testar rotas protegidas (Articles/Comments), realize o login no endpoint `/auth/login`, copie o token, clique no botão **Authorize** no topo do Swagger e cole o token.
