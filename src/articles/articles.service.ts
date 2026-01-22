@@ -28,10 +28,12 @@ export class ArticlesService {
     const limit = Math.min(pageSize, 50);
     const skip = (page - 1) * limit;
 
+    const tagLabel = tag ? TagLabels[tag] : undefined;
+
     const where: Prisma.ArticleWhereInput = {
       AND: [
         search ? { title: { contains: search, mode: 'insensitive' } } : {},
-        tag ? { tags: { some: { name: tag } } } : {},
+        tagLabel ? { tags: { some: { name: tagLabel } } } : {},
       ],
     };
 
@@ -50,6 +52,7 @@ export class ArticlesService {
       id: item.id,
       title: item.title,
       content: item.content,
+      imageUrl: item.imageUrl,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       author: { id: item.authorId, name: item.author.name },
@@ -83,6 +86,7 @@ export class ArticlesService {
       id: item.id,
       title: item.title,
       content: item.content,
+      imageUrl: item.imageUrl,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       author: {
@@ -101,6 +105,7 @@ export class ArticlesService {
       data: {
         title: dto.title,
         content: dto.content,
+        imageUrl: dto.imageUrl,
         authorId: authorId,
         tags: {
           connect: dto.tags?.map((code) => ({ name: TagLabels[code] })),
@@ -116,6 +121,7 @@ export class ArticlesService {
       id: item.id,
       title: item.title,
       content: item.content,
+      imageUrl: item.imageUrl,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       author: {
@@ -146,6 +152,7 @@ export class ArticlesService {
     const updateData: Prisma.ArticleUpdateInput = {
       title: dto.title,
       content: dto.content,
+      imageUrl: dto.imageUrl,
     };
 
     if (dto.tags && Array.isArray(dto.tags)) {
@@ -170,6 +177,7 @@ export class ArticlesService {
       id: updated.id,
       title: updated.title,
       content: updated.content,
+      imageUrl: updated.imageUrl,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
       author: {
@@ -188,9 +196,7 @@ export class ArticlesService {
       where: { id },
     });
 
-    if (!article) {
-      throw new NotFoundException('Artigo não encontrado');
-    }
+    if (!article) throw new NotFoundException('Artigo não encontrado');
 
     if (article.authorId !== userId) {
       throw new ForbiddenException(

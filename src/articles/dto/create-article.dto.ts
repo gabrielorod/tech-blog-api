@@ -6,6 +6,7 @@ import {
   IsArray,
   IsOptional,
   IsEnum,
+  IsUrl,
 } from 'class-validator';
 import { TagCodes } from '../enum/tag-names.enum';
 
@@ -28,4 +29,9 @@ export class CreateArticleDto {
   })
   @IsOptional()
   tags?: TagCodes[];
+
+  @IsString()
+  @IsUrl({}, { message: 'A URL da imagem é inválida' })
+  @IsOptional()
+  imageUrl?: string;
 }
